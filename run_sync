@@ -1,0 +1,25 @@
+#!/bin/bash
+
+USER=rslsync
+
+if [ ! -z "$SYNC_USER" ]; then
+    USER=$SYNC_USER
+fi
+
+if [ ! -z "$SYNC_UID" ]; then
+    opts="$opts --uid $SYNC_UID"
+fi
+
+if [ ! -z "$SYNC_GID" ]; then
+    opts="$opts --gid $SYNC_GID"
+    groupadd --gid $SYNC_GID $USER
+fi
+
+useradd --no-create-home --home-dir /nonexistent --shell /bin/false $opts $USER
+
+mkdir -p /mnt/sync/folders
+mkdir -p /mnt/sync/config
+
+chown ${USER}.$USER /mnt/sync /mnt/sync/config /mnt/sync/folders
+
+exec gosu $USER /usr/bin/rslsync --nodaemon $*
